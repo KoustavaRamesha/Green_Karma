@@ -1,0 +1,28 @@
+{
+    "name": "green-karma",
+    "version": "1.0.0",
+    "description": "Blockchain-based recycling rewards platform",
+    "scripts": {
+        "install:all": "npm run install:blockchain && npm run install:backend && npm run install:frontend",
+        "install:blockchain": "cd blockchain && npm install",
+        "install:backend": "cd backend && npm install",
+        "install:frontend": "cd frontend && npm install",
+        "dev": "concurrently \"npm run dev:blockchain\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+        "dev:blockchain": "cd blockchain && npm run node",
+        "dev:backend": "cd backend && npm run dev",
+        "dev:frontend": "cd frontend && npm run dev",
+        "deploy:local": "cd blockchain && npm run deploy:local",
+        "deploy:mumbai": "cd blockchain && npm run deploy:mumbai"
+    },
+    "keywords": [
+        "blockchain",
+        "recycling",
+        "carbon-tokens",
+        "sustainability"
+    ],
+    "author": "Green Karma Team",
+    "license": "MIT",
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}
