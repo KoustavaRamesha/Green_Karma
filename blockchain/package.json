@@ -12,12 +12,18 @@
     "deploy:polygon": "hardhat run scripts/deploy.js --network polygon",
     "verify": "hardhat verify"
   },
-  "keywords": ["blockchain", "recycling", "carbon-tokens", "hardhat", "solidity"],
+  "keywords": [
+    "blockchain",
+    "recycling",
+    "carbon-tokens",
+    "hardhat",
+    "solidity"
+  ],
   "author": "Green Karma Team",
   "license": "MIT",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.19.0"
+    "hardhat": "^2.27.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.1",

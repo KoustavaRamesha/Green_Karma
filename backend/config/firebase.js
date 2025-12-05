@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 const axios = require('axios');
+const path = require('path');
 
 // Load env vars (dotenv is already called in server.js)
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'green-kar';
@@ -13,7 +14,9 @@ let adminDb = null;
 
 if (SERVICE_ACCOUNT_PATH) {
     try {
-        const serviceAccount = require(SERVICE_ACCOUNT_PATH);
+        // Resolve the path relative to the backend directory (where server.js runs from)
+        const resolvedPath = path.resolve(process.cwd(), SERVICE_ACCOUNT_PATH);
+        const serviceAccount = require(resolvedPath);
         adminApp = admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
             projectId: FIREBASE_PROJECT_ID,
@@ -34,23 +37,24 @@ if (!db) {
             this.collectionName = collectionName;
             this.baseUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
         }
-        async doc(docId) {
+        doc(docId) {
             const url = `${this.baseUrl}/${this.collectionName}/${docId}`;
+            const self = this;
             return {
                 get: async () => {
                     try {
                         const res = await axios.get(`${url}?key=${FIREBASE_API_KEY}`);
-                        return { exists: true, id: docId, data: () => this._convertFirestoreData(res.data.fields) };
+                        return { exists: true, id: docId, data: () => self._convertFirestoreData(res.data.fields) };
                     } catch {
                         return { exists: false, id: docId, data: () => null };
                     }
                 },
                 set: async (data) => {
-                    const payload = { fields: this._toFirestoreFormat(data) };
+                    const payload = { fields: self._toFirestoreFormat(data) };
                     await axios.patch(`${url}?key=${FIREBASE_API_KEY}&currentDocument.exists=false`, payload);
                 },
                 update: async (data) => {
-                    const payload = { fields: this._toFirestoreFormat(data) };
+                    const payload = { fields: self._toFirestoreFormat(data) };
                     await axios.patch(`${url}?key=${FIREBASE_API_KEY}`, payload);
                 }
             };
