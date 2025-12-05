@@ -128,11 +128,11 @@ export default function Verifier() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 via-white to-green-50">
         <div className="text-center">
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-            <Shield className="w-6 h-6 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto"></div>
+            <Shield className="w-6 h-6 text-emerald-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
           </div>
           <p className="mt-4 text-gray-600 font-medium">
             Loading verifier dashboard...
@@ -143,31 +143,31 @@ export default function Verifier() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-green-50">
       <Head>
         <title>Verifier Dashboard | Green Karma</title>
       </Head>
 
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-lg border-b border-blue-100 sticky top-0 z-50 shadow-sm">
+      <nav className="bg-white/80 backdrop-blur-lg border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
                 <Leaf className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
                   Green Karma
                 </span>
-                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">
+                <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-semibold">
                   Verifier
                 </span>
               </div>
             </Link>
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 bg-blue-50 rounded-full px-4 py-2 border border-blue-100">
-                <User className="w-4 h-4 text-blue-600" />
+              <div className="hidden md:flex items-center space-x-2 bg-emerald-50 rounded-full px-4 py-2 border border-emerald-100">
+                <User className="w-4 h-4 text-emerald-600" />
                 <span className="text-sm text-gray-700 font-medium">
                   {user?.name}
                 </span>
@@ -187,10 +187,10 @@ export default function Verifier() {
       </nav>
 
       {/* Stats Banner - Light Theme */}
-      <div className="relative bg-gradient-to-r from-blue-100 via-indigo-100 to-violet-100 overflow-hidden border-b border-blue-200/50">
+      <div className="relative bg-gradient-to-r from-emerald-100 via-green-100 to-teal-100 overflow-hidden border-b border-emerald-200/50">
         {/* Soft gradient orbs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-200/50 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-indigo-200/40 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-emerald-200/50 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-green-200/40 to-transparent rounded-full blur-3xl" />
 
         {/* Subtle wave SVG */}
         <svg
@@ -199,7 +199,7 @@ export default function Verifier() {
           preserveAspectRatio="none"
         >
           <path
-            fill="rgba(99, 102, 241, 0.3)"
+            fill="rgba(16, 185, 129, 0.3)"
             d="M0,100 L0,60 Q200,30 400,50 T800,30 T1200,50 T1440,20 L1440,100 Z"
           />
         </svg>
@@ -216,13 +216,13 @@ export default function Verifier() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-200 text-sm font-medium mb-1">
+                  <p className="text-emerald-700 text-sm font-medium mb-1">
                     Pending Review
                   </p>
                   <p className="text-4xl font-bold">
                     {pendingSubmissions.length}
                   </p>
-                  <p className="text-xs text-blue-200 mt-2">
+                  <p className="text-xs text-emerald-600 mt-2">
                     Awaiting verification
                   </p>
                 </div>
@@ -237,7 +237,7 @@ export default function Verifier() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-200 text-sm font-medium mb-1">
+                  <p className="text-green-700 text-sm font-medium mb-1">
                     Verified Today
                   </p>
                   <p className="text-4xl font-bold">
@@ -249,7 +249,7 @@ export default function Verifier() {
                       ).length
                     }
                   </p>
-                  <p className="text-xs text-blue-200 mt-2">Great progress!</p>
+                  <p className="text-xs text-green-600 mt-2">Great progress!</p>
                 </div>
                 <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                   <CheckCircle className="w-7 h-7" />
@@ -262,11 +262,11 @@ export default function Verifier() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-200 text-sm font-medium mb-1">
+                  <p className="text-teal-700 text-sm font-medium mb-1">
                     Total Verified
                   </p>
                   <p className="text-4xl font-bold">{history.length}</p>
-                  <p className="text-xs text-blue-200 mt-2">All-time record</p>
+                  <p className="text-xs text-teal-600 mt-2">All-time record</p>
                 </div>
                 <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                   <History className="w-7 h-7" />
@@ -284,7 +284,7 @@ export default function Verifier() {
             onClick={() => setActiveTab("pending")}
             className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
               activeTab === "pending"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+                ? "bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-500/25"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -306,7 +306,7 @@ export default function Verifier() {
             onClick={() => setActiveTab("history")}
             className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
               activeTab === "history"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+                ? "bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-500/25"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -322,16 +322,16 @@ export default function Verifier() {
           className="mb-8"
         >
           {/* Helper Info */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-4">
+          <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl p-6 mb-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <QrCode className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <QrCode className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h4 className="font-bold text-blue-900 text-lg mb-2">
+                <h4 className="font-bold text-emerald-900 text-lg mb-2">
                   How to Verify Submissions
                 </h4>
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-emerald-700">
                   <strong>Easiest Method:</strong> Browse pending submissions
                   below and click "Verify" to review each one. You can also use
                   the QR scanner or enter a submission ID manually.
@@ -345,7 +345,7 @@ export default function Verifier() {
             className={`inline-flex items-center px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
               scanMode
                 ? "bg-gray-200 text-gray-700"
-                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl"
+                : "bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl"
             }`}
           >
             <QrCode className="w-5 h-5 mr-2" />
@@ -375,10 +375,10 @@ export default function Verifier() {
                   {/* Camera Scan Option */}
                   <button
                     onClick={() => setShowCamera(true)}
-                    className="p-6 border-2 border-blue-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                    className="p-6 border-2 border-emerald-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
                   >
                     <div className="flex flex-col items-center text-center">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform">
+                      <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform">
                         <Camera className="w-8 h-8 text-white" />
                       </div>
                       <h4 className="font-bold text-lg text-gray-900 mb-1">
@@ -504,8 +504,8 @@ export default function Verifier() {
                           {submission.weight} kg
                         </p>
                       </div>
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Recycle className="w-5 h-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <Recycle className="w-5 h-5 text-emerald-600" />
                       </div>
                     </div>
 
@@ -525,7 +525,7 @@ export default function Verifier() {
 
                     <button
                       onClick={() => setSelectedSubmission(submission)}
-                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all flex items-center justify-center"
+                      className="w-full py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center justify-center"
                     >
                       Verify Submission
                       <ArrowRight className="w-4 h-4 ml-2" />
@@ -675,7 +675,7 @@ function VerificationModal({ submission, onVerify, onClose }) {
         {/* Header */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -707,8 +707,8 @@ function VerificationModal({ submission, onVerify, onClose }) {
 
           {/* Submission Details */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-blue-50 rounded-xl">
-              <label className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
+            <div className="p-4 bg-emerald-50 rounded-xl">
+              <label className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
                 Category
               </label>
               <div className="font-bold text-gray-900 mt-1">
