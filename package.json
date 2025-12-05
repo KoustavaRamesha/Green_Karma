@@ -1,0 +1,10 @@
+{
+    "name": "green-karma",
+    "version": "1.0.0",
+    "description": "Blockchain-based recycling rewards platform",
+    "scripts": {
+        "install:all": "cd blockchain && npm install && cd ../backend && npm install && cd ../frontend && npm install --legacy-peer-deps"
+    },
+    "author": "Green Karma Team",
+    "license": "MIT"
+}
