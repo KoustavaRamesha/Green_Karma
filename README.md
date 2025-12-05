@@ -264,20 +264,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Team
 
-- **Koustava Ramesha** - Lead Developer
-- [Add team members]
+- **Pranav R H** -Team Head
+- **K P nihal** -Member 1
+- **Koustava Ramesha** -Member 2
+- **Chandan KV** -Member 3
+- **Rethash Reddy** -Member 4
 
 ---
 
 ## 📞 Contact
 
 - **GitHub**: [@KoustavaRamesha](https://github.com/KoustavaRamesha)
-- **Email**: [your-email@example.com]
+- **Email**: [pranavrh260@example.com]
 
 ---
 
 <p align="center">
-  <b>Built with 💚 for a sustainable future</b>
+  <b>Built with 💚 for a sustainable future By Team Data_Dawgs</b>
   <br/>
   <i>Every piece of recycled waste counts!</i>
 </p>
