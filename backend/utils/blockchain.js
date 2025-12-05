@@ -42,6 +42,17 @@ function initializeBlockchain() {
             rewardEngine: new ethers.Contract(deploymentData.contracts.RewardEngine, rewardEngineABI, signer || provider)
         };
 
+        // Load GreenCertificate if deployed
+        try {
+            if (deploymentData.contracts.GreenCertificate) {
+                const certificateABI = require('../../blockchain/artifacts/contracts/GreenCertificate.sol/GreenCertificate.json').abi;
+                contracts.certificate = new ethers.Contract(deploymentData.contracts.GreenCertificate, certificateABI, signer || provider);
+                console.log('✅ GreenCertificate contract loaded');
+            }
+        } catch (certError) {
+            console.warn('⚠️  GreenCertificate contract not available:', certError.message);
+        }
+
         console.log('✅ Blockchain connection initialized');
         return true;
     } catch (error) {
@@ -53,27 +64,69 @@ function initializeBlockchain() {
 // Initialize on module load
 initializeBlockchain();
 
-// Register user on blockchain
+// Check if user is registered on blockchain
+async function isUserRegisteredOnChain(walletAddress) {
+    if (!contracts) {
+        return false;
+    }
+    try {
+        return await contracts.identity.isUser(walletAddress);
+    } catch (error) {
+        console.error('Error checking user registration:', error);
+        return false;
+    }
+}
+
+// Check if verifier is registered on blockchain
+async function isVerifierRegisteredOnChain(walletAddress) {
+    if (!contracts) {
+        return false;
+    }
+    try {
+        return await contracts.identity.isVerifier(walletAddress);
+    } catch (error) {
+        console.error('Error checking verifier registration:', error);
+        return false;
+    }
+}
+
+// Register user on blockchain (with check to avoid duplicates)
 async function registerUserOnChain(identityHash, walletAddress) {
     if (!contracts || !signer) {
         throw new Error('Blockchain not initialized');
     }
 
+    // Check if already registered
+    const isRegistered = await isUserRegisteredOnChain(walletAddress);
+    if (isRegistered) {
+        console.log('User already registered on blockchain:', walletAddress);
+        return 'already-registered';
+    }
+
     const hashBytes = ethers.encodeBytes32String(identityHash.substring(0, 31));
     const tx = await contracts.identity.registerUser(hashBytes, walletAddress);
     await tx.wait();
+    console.log('✅ User registered on blockchain:', walletAddress, 'TX:', tx.hash);
 
     return tx.hash;
 }
 
-// Register verifier on blockchain
+// Register verifier on blockchain (with check to avoid duplicates)
 async function registerVerifierOnChain(walletAddress, organization) {
     if (!contracts || !signer) {
         throw new Error('Blockchain not initialized');
     }
 
+    // Check if already registered
+    const isRegistered = await isVerifierRegisteredOnChain(walletAddress);
+    if (isRegistered) {
+        console.log('Verifier already registered on blockchain:', walletAddress);
+        return 'already-registered';
+    }
+
     const tx = await contracts.identity.registerVerifier(walletAddress, organization);
     await tx.wait();
+    console.log('✅ Verifier registered on blockchain:', walletAddress, 'TX:', tx.hash);
 
     return tx.hash;
 }
@@ -187,8 +240,191 @@ async function getUserRecords(walletAddress) {
     return records;
 }
 
+// Certificate threshold in grams (40kg)
+const CERTIFICATE_THRESHOLD = 40000;
+
+// Mint certificate for large donors
+async function mintCertificate(recipientAddress, recipientName, totalWeightGrams, category, metadataURI) {
+    if (!contracts || !contracts.certificate || !signer) {
+        throw new Error('Certificate contract not initialized');
+    }
+
+    if (totalWeightGrams < CERTIFICATE_THRESHOLD) {
+        throw new Error('Weight must be at least 40kg for certificate');
+    }
+
+    const tx = await contracts.certificate.mintCertificate(
+        recipientAddress,
+        recipientName,
+        totalWeightGrams,
+        category,
+        metadataURI || ''
+    );
+    const receipt = await tx.wait();
+
+    // Parse the CertificateMinted event
+    const event = receipt.logs.find(log => {
+        try {
+            const parsed = contracts.certificate.interface.parseLog(log);
+            return parsed.name === 'CertificateMinted';
+        } catch {
+            return false;
+        }
+    });
+
+    let tokenId = 0;
+    let certificateType = 'BRONZE';
+    if (event) {
+        const parsed = contracts.certificate.interface.parseLog(event);
+        tokenId = Number(parsed.args.tokenId);
+        certificateType = parsed.args.certificateType;
+    }
+
+    console.log(`🏆 Certificate minted! Token ID: ${tokenId}, Type: ${certificateType}`);
+
+    return {
+        tokenId,
+        certificateType,
+        txHash: receipt.hash,
+        blockNumber: receipt.blockNumber
+    };
+}
+
+// Get user's certificates
+async function getUserCertificates(walletAddress) {
+    if (!contracts || !contracts.certificate) {
+        return [];
+    }
+
+    try {
+        const tokenIds = await contracts.certificate.getUserCertificates(walletAddress);
+        const certificates = [];
+
+        for (const tokenId of tokenIds) {
+            const cert = await contracts.certificate.getCertificate(tokenId);
+            certificates.push({
+                tokenId: Number(cert.tokenId),
+                recipient: cert.recipient,
+                recipientName: cert.recipientName,
+                totalWeight: Number(cert.totalWeight),
+                category: cert.category,
+                issuedAt: new Date(Number(cert.issuedAt) * 1000),
+                certificateType: cert.certificateType,
+                ipfsMetadataHash: cert.ipfsMetadataHash
+            });
+        }
+
+        return certificates;
+    } catch (error) {
+        console.error('Error fetching certificates:', error);
+        return [];
+    }
+}
+
+// Get certificate by token ID
+async function getCertificate(tokenId) {
+    if (!contracts || !contracts.certificate) {
+        throw new Error('Certificate contract not initialized');
+    }
+
+    const cert = await contracts.certificate.getCertificate(tokenId);
+    return {
+        tokenId: Number(cert.tokenId),
+        recipient: cert.recipient,
+        recipientName: cert.recipientName,
+        totalWeight: Number(cert.totalWeight),
+        category: cert.category,
+        issuedAt: new Date(Number(cert.issuedAt) * 1000),
+        certificateType: cert.certificateType,
+        ipfsMetadataHash: cert.ipfsMetadataHash
+    };
+}
+
+// Check certificate eligibility
+async function checkCertificateEligibility(totalWeightGrams) {
+    if (totalWeightGrams < CERTIFICATE_THRESHOLD) {
+        return { eligible: false, certificateType: null };
+    }
+
+    let certificateType = 'BRONZE';
+    if (totalWeightGrams >= 1000000) {
+        certificateType = 'PLATINUM';
+    } else if (totalWeightGrams >= 500000) {
+        certificateType = 'GOLD';
+    } else if (totalWeightGrams >= 100000) {
+        certificateType = 'SILVER';
+    }
+
+    return { eligible: true, certificateType };
+}
+
+// Get total certificates issued
+async function getTotalCertificates() {
+    if (!contracts || !contracts.certificate) {
+        return 0;
+    }
+    return Number(await contracts.certificate.getTotalCertificates());
+}
+
+// Verify certificate authenticity on blockchain
+// This directly queries the blockchain to verify certificate data is tamper-proof
+async function verifyCertificateOnChain(tokenId) {
+    if (!contracts || !contracts.certificate) {
+        return {
+            verified: false,
+            tamperProof: false,
+            error: 'Certificate contract not initialized'
+        };
+    }
+
+    try {
+        // Get certificate data directly from blockchain
+        const cert = await contracts.certificate.getCertificate(tokenId);
+        
+        // Get contract address
+        const contractAddress = await contracts.certificate.getAddress();
+        
+        // Get owner of the NFT token
+        const owner = await contracts.certificate.ownerOf(tokenId);
+        
+        // Verify NFT exists
+        const exists = await contracts.certificate.tokenURI(tokenId).catch(() => null);
+        
+        return {
+            verified: true,
+            tamperProof: true,
+            certificate: {
+                tokenId: Number(cert.tokenId),
+                recipient: cert.recipient,
+                recipientName: cert.recipientName,
+                totalWeight: Number(cert.totalWeight),
+                category: cert.category,
+                issuedAt: new Date(Number(cert.issuedAt) * 1000),
+                certificateType: cert.certificateType,
+                ipfsMetadataHash: cert.ipfsMetadataHash
+            },
+            blockchainProof: {
+                contractAddress,
+                tokenOwner: owner,
+                tokenExists: !!exists,
+                blockTimestamp: Number(cert.issuedAt),
+                onChain: true
+            }
+        };
+    } catch (error) {
+        return {
+            verified: false,
+            tamperProof: false,
+            error: error.message,
+            onChain: false
+        };
+    }
+}
+
 module.exports = {
     initializeBlockchain,
+    isUserRegisteredOnChain,
+    isVerifierRegisteredOnChain,
     registerUserOnChain,
     registerVerifierOnChain,
     recordRecyclingOnChain,
@@ -196,6 +432,14 @@ module.exports = {
     processRewardOnChain,
     getTokenBalance,
     getUserRecords,
+    // Certificate functions
+    mintCertificate,
+    getUserCertificates,
+    getCertificate,
+    checkCertificateEligibility,
+    getTotalCertificates,
+    verifyCertificateOnChain,
+    CERTIFICATE_THRESHOLD,
     contracts,
     provider
 };

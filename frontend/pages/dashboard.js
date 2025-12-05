@@ -3,12 +3,13 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
     Leaf, Home, Upload, History, Award, User,
-    TrendingUp, Recycle, Coins, Calendar, X
+    TrendingUp, Recycle, Coins, Calendar, X, Trophy
 } from 'lucide-react';
 import { userAPI, wasteAPI } from '../lib/api';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Navbar from '../components/Navbar';
+import { CertificatesGallery } from '../components/CertificateComponents';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Dashboard() {
@@ -136,12 +137,34 @@ export default function Dashboard() {
                                     <User className="w-5 h-5" />
                                     <span>Profile</span>
                                 </button>
+                                <button
+                                    onClick={() => setActiveTab('achievements')}
+                                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${activeTab === 'achievements'
+                                        ? 'bg-gradient-green text-white'
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    <Trophy className="w-5 h-5" />
+                                    <span>Achievements</span>
+                                </button>
                             </nav>
                         </div>
                     </div>
 
                     {/* Main Content */}
                     <div className="lg:col-span-3">
+                        {activeTab === 'achievements' && (
+                            <div className="space-y-6">
+                                <h2 className="text-2xl font-bold bg-gradient-green bg-clip-text text-transparent">
+                                    My Achievements & Certificates
+                                </h2>
+                                <p className="text-gray-600">
+                                    Earn blockchain-verified certificates for your recycling contributions.
+                                </p>
+                                <CertificatesGallery />
+                            </div>
+                        )}
+
                         {activeTab === 'overview' && (
                             <div className="space-y-6">
                                 {/* Stats Cards */}
@@ -163,7 +186,7 @@ export default function Dashboard() {
                                             <TrendingUp className="w-5 h-5" />
                                         </div>
                                         <div className="text-3xl font-bold mb-1">
-                                            {stats?.totalRecycled?.toFixed(2) || 0} kg
+                                            {Number(stats?.totalRecycled || 0).toFixed(2)} kg
                                         </div>
                                         <div className="text-white/80">Total Recycled</div>
                                     </div>
@@ -253,76 +276,78 @@ export default function Dashboard() {
                         {activeTab === 'profile' && <ProfileTab user={user} />}
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* QR Code Modal */}
-            <AnimatePresence>
-                {qrModal.open && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-                        onClick={() => setQrModal({ open: false, qrCode: null, submission: null })}
-                    >
+            < AnimatePresence >
+                {
+                    qrModal.open && (
                         <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.9, y: 20 }}
-                            className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
-                            onClick={(e) => e.stopPropagation()}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                            onClick={() => setQrModal({ open: false, qrCode: null, submission: null })}
                         >
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-bold text-gray-900">QR Code for Verification</h3>
-                                <button
-                                    onClick={() => setQrModal({ open: false, qrCode: null, submission: null })}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                >
-                                    <X className="w-6 h-6 text-gray-500" />
-                                </button>
-                            </div>
-
-                            {qrModal.qrCode ? (
-                                <div className="text-center">
-                                    <img
-                                        src={qrModal.qrCode}
-                                        alt="QR Code"
-                                        className="mx-auto w-full max-w-sm h-auto mb-6 rounded-lg shadow-md"
-                                    />
-
-                                    {/* Submission ID Display */}
-                                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
-                                        <p className="text-xs text-gray-600 mb-1 font-medium">SUBMISSION ID</p>
-                                        <p className="font-mono text-sm font-bold text-gray-900 break-all select-all">
-                                            {qrModal.submission?.id}
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            📋 Tap to select and copy
-                                        </p>
-                                    </div>
-
-                                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                        <p className="text-sm text-gray-600 mb-1">Category</p>
-                                        <p className="font-semibold text-gray-900">{qrModal.submission?.category}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <p className="text-sm text-gray-600 mb-1">Weight</p>
-                                        <p className="font-semibold text-gray-900">{qrModal.submission?.weight} kg</p>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mt-6">
-                                        Show this QR code to a verifier to get your waste verified
-                                    </p>
+                            <motion.div
+                                initial={{ scale: 0.9, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.9, y: 20 }}
+                                className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-2xl font-bold text-gray-900">QR Code for Verification</h3>
+                                    <button
+                                        onClick={() => setQrModal({ open: false, qrCode: null, submission: null })}
+                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <X className="w-6 h-6 text-gray-500" />
+                                    </button>
                                 </div>
-                            ) : (
-                                <div className="flex justify-center items-center py-12">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-                                </div>
-                            )}
+
+                                {qrModal.qrCode ? (
+                                    <div className="text-center">
+                                        <img
+                                            src={qrModal.qrCode}
+                                            alt="QR Code"
+                                            className="mx-auto w-full max-w-sm h-auto mb-6 rounded-lg shadow-md"
+                                        />
+
+                                        {/* Submission ID Display */}
+                                        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
+                                            <p className="text-xs text-gray-600 mb-1 font-medium">SUBMISSION ID</p>
+                                            <p className="font-mono text-sm font-bold text-gray-900 break-all select-all">
+                                                {qrModal.submission?.id}
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                📋 Tap to select and copy
+                                            </p>
+                                        </div>
+
+                                        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                                            <p className="text-sm text-gray-600 mb-1">Category</p>
+                                            <p className="font-semibold text-gray-900">{qrModal.submission?.category}</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-4 rounded-lg">
+                                            <p className="text-sm text-gray-600 mb-1">Weight</p>
+                                            <p className="font-semibold text-gray-900">{qrModal.submission?.weight} kg</p>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mt-6">
+                                            Show this QR code to a verifier to get your waste verified
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="flex justify-center items-center py-12">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                                    </div>
+                                )}
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 }
 

@@ -9,6 +9,8 @@ const authRoutes = require('./routes/auth');
 const wasteRoutes = require('./routes/waste');
 const userRoutes = require('./routes/user');
 const verifierRoutes = require('./routes/verifier');
+const notificationRoutes = require('./routes/notifications');
+const verifyRoutes = require('./routes/verify');
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/waste', wasteRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/verifier', verifierRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/verify', verifyRoutes);
 
 
 // Health check
@@ -44,7 +48,8 @@ app.get('/', (req, res) => {
             auth: '/api/auth',
             waste: '/api/waste',
             user: '/api/user',
-            verifier: '/api/verifier'
+            verifier: '/api/verifier',
+            notifications: '/api/notifications'
         }
     });
 });

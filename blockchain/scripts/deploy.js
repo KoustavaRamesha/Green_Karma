@@ -50,14 +50,29 @@ async function main() {
     console.log("✅ RewardEngine deployed to:", rewardEngineAddress);
     console.log();
 
-    // 5. Set RewardEngine in CarbonToken
+    // 5. Deploy GreenCertificate NFT
+    console.log("📝 Deploying GreenCertificate NFT...");
+    const GreenCertificate = await hre.ethers.getContractFactory("GreenCertificate");
+    const greenCertificate = await GreenCertificate.deploy();
+    await greenCertificate.waitForDeployment();
+    const greenCertificateAddress = await greenCertificate.getAddress();
+    console.log("✅ GreenCertificate deployed to:", greenCertificateAddress);
+    console.log();
+
+    // 6. Set RewardEngine in CarbonToken
     console.log("🔗 Connecting RewardEngine to CarbonToken...");
     const tx = await carbonToken.setRewardEngine(rewardEngineAddress);
     await tx.wait();
     console.log("✅ RewardEngine connected to CarbonToken");
     console.log();
 
-    // 6. Save deployment addresses
+    // 7. Grant minter role to deployer for certificates
+    console.log("🔗 Setting up GreenCertificate permissions...");
+    // Minter role is already granted in constructor, but we can add more if needed
+    console.log("✅ GreenCertificate permissions configured");
+    console.log();
+
+    // 8. Save deployment addresses
     const deploymentInfo = {
         network: hre.network.name,
         chainId: (await hre.ethers.provider.getNetwork()).chainId.toString(),
@@ -67,7 +82,8 @@ async function main() {
             IdentityContract: identityAddress,
             RecycleRecordContract: recycleRecordAddress,
             CarbonToken: carbonTokenAddress,
-            RewardEngine: rewardEngineAddress
+            RewardEngine: rewardEngineAddress,
+            GreenCertificate: greenCertificateAddress
         }
     };
 
@@ -81,7 +97,7 @@ async function main() {
     console.log("💾 Deployment info saved to:", deploymentPath);
     console.log();
 
-    // 7. Display summary
+    // 9. Display summary
     console.log("🎉 Deployment Complete!\n");
     console.log("═══════════════════════════════════════════════════════");
     console.log("Contract Addresses:");
@@ -90,6 +106,7 @@ async function main() {
     console.log("RecycleRecordContract:  ", recycleRecordAddress);
     console.log("CarbonToken:            ", carbonTokenAddress);
     console.log("RewardEngine:           ", rewardEngineAddress);
+    console.log("GreenCertificate:       ", greenCertificateAddress);
     console.log("═══════════════════════════════════════════════════════");
     console.log("\n✨ All contracts deployed and configured successfully!");
     console.log("\n📋 Next steps:");

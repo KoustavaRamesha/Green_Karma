@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Leaf, QrCode, CheckCircle, XCircle, LogOut } from 'lucide-react';
+import { Leaf, QrCode, CheckCircle, XCircle, LogOut, Trophy } from 'lucide-react';
 import { verifierAPI } from '../lib/api';
 import toast from 'react-hot-toast';
 import QRScanner from '../components/QRScanner';
@@ -427,6 +427,33 @@ function VerificationModal({ submission, onVerify, onClose }) {
                             onChange={(e) => setActualWeight(e.target.value)}
                             className="input-field"
                         />
+                    </div>
+
+                    {/* Certificate Eligibility Indicator */}
+                    <div className={`p-4 rounded-lg flex items-center gap-3 transition-colors ${parseFloat(actualWeight) >= 40
+                        ? 'bg-amber-50 border border-amber-200'
+                        : 'bg-gray-50 border border-gray-100 opacity-50'
+                        }`}>
+                        <div className={`p-2 rounded-full ${parseFloat(actualWeight) >= 40 ? 'bg-amber-100' : 'bg-gray-200'
+                            }`}>
+                            <Trophy className={`w-5 h-5 ${parseFloat(actualWeight) >= 40 ? 'text-amber-600' : 'text-gray-400'
+                                }`} />
+                        </div>
+                        <div>
+                            <p className={`font-semibold ${parseFloat(actualWeight) >= 40 ? 'text-amber-900' : 'text-gray-500'
+                                }`}>
+                                {parseFloat(actualWeight) >= 1000 ? 'Platinum Certificate Eligible' :
+                                    parseFloat(actualWeight) >= 500 ? 'Gold Certificate Eligible' :
+                                        parseFloat(actualWeight) >= 100 ? 'Silver Certificate Eligible' :
+                                            parseFloat(actualWeight) >= 40 ? 'Bronze Certificate Eligible' :
+                                                'No Certificate'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                                {parseFloat(actualWeight) >= 40
+                                    ? 'A blockchain NFT will be automatically minted for this user.'
+                                    : 'Minimum 40kg required for blockchain certificate.'}
+                            </p>
+                        </div>
                     </div>
                 </div>
 

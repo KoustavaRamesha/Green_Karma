@@ -1,7 +1,13 @@
 const express = require('express');
 const { authMiddleware, verifierMiddleware } = require('../middleware/auth');
 const { db } = require('../config/firebase');
-const { recordRecyclingOnChain, processRewardOnChain } = require('../utils/blockchain');
+const {
+    recordRecyclingOnChain,
+    processRewardOnChain,
+    mintCertificate,
+    checkCertificateEligibility,
+    CERTIFICATE_THRESHOLD
+} = require('../utils/blockchain');
 
 const router = express.Router();
 
@@ -136,11 +142,91 @@ router.post('/verify/:submissionId', authMiddleware, verifierMiddleware, async (
         const userDoc = await userRef.get();
         const userData = userDoc.data();
 
+        const newTotalRecycled = (userData.totalRecycled || 0) + finalWeight;
+
         await userRef.update({
-            totalRecycled: (userData.totalRecycled || 0) + finalWeight,
+            totalRecycled: newTotalRecycled,
             totalTokensEarned: (userData.totalTokensEarned || 0) + rewardAmount,
             updatedAt: new Date().toISOString()
         });
+
+        // Check if user qualifies for certificate (>= 40kg)
+        let certificateData = null;
+        const weightInGrams = Math.floor(finalWeight * 1000);
+
+        if (weightInGrams >= CERTIFICATE_THRESHOLD) {
+            try {
+                const eligibility = await checkCertificateEligibility(weightInGrams);
+                if (eligibility.eligible && submission.userWallet) {
+                    // Get verifier information
+                    const verifierDoc = await db.collection('users').doc(req.userId).get();
+                    const verifierData = verifierDoc.exists ? verifierDoc.data() : null;
+
+                    let certResult = null;
+                    let blockchainMinted = false;
+
+                    // Try to mint blockchain certificate
+                    try {
+                        certResult = await mintCertificate(
+                            submission.userWallet,
+                            userData.name || 'Anonymous Donor',
+                            weightInGrams,
+                            submission.category,
+                            '' // IPFS metadata URI - can be added later
+                        );
+                        blockchainMinted = true;
+                        console.log(`🏆 Blockchain certificate minted for ${userData.name}: ${certResult.certificateType} (Token #${certResult.tokenId})`);
+                    } catch (blockchainError) {
+                        console.error('⚠️ Blockchain certificate minting failed (will create Firestore certificate):', blockchainError.message);
+                        // Continue to create Firestore certificate even if blockchain fails
+                    }
+
+                    // Create certificate data (with or without blockchain data)
+                    certificateData = {
+                        tokenId: certResult?.tokenId || `temp-${Date.now()}`, // Temporary ID if no blockchain
+                        certificateType: eligibility.certificateType || 'BRONZE',
+                        txHash: certResult?.txHash || null,
+                        weight: finalWeight,
+                        totalWeight: weightInGrams,
+                        category: submission.category,
+                        recipientName: userData.name || 'Anonymous Donor',
+                        recipient: submission.userWallet,
+                        issuedAt: new Date().toISOString(),
+                        verifierName: verifierData?.name || 'Green Karma Verifier',
+                        verifierWallet: req.user.walletAddress,
+                        verifierId: req.userId,
+                        blockNumber: certResult?.blockNumber || null,
+                        submissionId: submissionId,
+                        blockchainMinted: blockchainMinted
+                    };
+
+                    if (certResult) {
+                        updateData.certificateTokenId = certResult.tokenId;
+                        updateData.certificateType = certResult.certificateType;
+                    } else {
+                        updateData.certificateType = eligibility.certificateType || 'BRONZE';
+                    }
+
+                    // Always create notification in Firestore (even if blockchain minting failed)
+                    await db.collection('notifications').add({
+                        userId: submission.userId,
+                        type: 'certificate',
+                        title: `🏆 ${eligibility.certificateType || 'BRONZE'} Certificate Earned!`,
+                        message: blockchainMinted 
+                            ? `Congratulations! You've earned a ${eligibility.certificateType || 'BRONZE'} certificate for recycling ${finalWeight}kg of ${submission.category}. This certificate is stored permanently on the blockchain.`
+                            : `Congratulations! You've earned a ${eligibility.certificateType || 'BRONZE'} certificate for recycling ${finalWeight}kg of ${submission.category}. Certificate pending blockchain confirmation.`,
+                        certificateData: certificateData,
+                        read: false,
+                        createdAt: new Date().toISOString()
+                    });
+
+                    console.log(`✅ Certificate created for ${userData.name}: ${eligibility.certificateType || 'BRONZE'} (Blockchain: ${blockchainMinted ? 'Yes' : 'Pending'})`);
+                }
+            } catch (certError) {
+                console.error('❌ Certificate creation error:', certError);
+                // Log but don't fail the verification process
+            }
+        }
 
         await submissionRef.update(updateData);
 
@@ -151,7 +237,8 @@ router.post('/verify/:submissionId', authMiddleware, verifierMiddleware, async (
                 status: updateData.status,
                 actualWeight: updateData.actualWeight,
                 blockchainRecordId: updateData.blockchainRecordId,
-                rewardAmount: updateData.rewardAmount
+                rewardAmount: updateData.rewardAmount,
+                certificate: certificateData
             }
         });
     } catch (error) {

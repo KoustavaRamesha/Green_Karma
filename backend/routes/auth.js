@@ -44,7 +44,26 @@ router.post('/register',
             const userDoc = await db.collection('users').doc(firebaseUid).get();
             if (userDoc.exists) {
                 const userData = userDoc.data();
-                console.log('User already exists:', firebaseUid);
+                console.log('User already exists in Firebase:', firebaseUid);
+
+                // Ensure user is registered on blockchain even if already in Firebase
+                try {
+                    const userWallet = userData.walletAddress || walletAddress;
+                    if (userWallet) {
+                        const identityHash = crypto.createHash('sha256')
+                            .update(`${userData.email}:${userData.name}:${Date.now()}`)
+                            .digest('hex');
+
+                        if (userData.role === 'verifier') {
+                            await registerVerifierOnChain(userWallet, userData.organization || 'Government');
+                        } else {
+                            await registerUserOnChain(identityHash, userWallet);
+                        }
+                    }
+                } catch (blockchainError) {
+                    console.error('Blockchain registration for existing user error:', blockchainError.message);
+                }
+
                 return res.status(200).json({
                     message: 'User already registered',
                     user: {
